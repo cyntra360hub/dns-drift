@@ -1,0 +1,35 @@
+name: Scheduled run
+
+on:
+  schedule:
+    # Every 30 minutes, offset by :03/:33 so this and its seven sibling
+    # agents (cert-sentinel, status-watch, ci-triage, alert-dedupe,
+    # backup-audit, deps-audit, latency-probe) don't all hit
+    # aiopsenabler.com / dns.google in the same minute.
+    - cron: "3,33 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install .
+      - uses: actions/cache@v4
+        with:
+          path: .state
+          # A run-unique key (never an exact hit) plus a prefix
+          # restore-key is the standard GitHub Actions pattern for a
+          # cache that must be *updated* every run: it always restores
+          # the most recent previous state, and always saves a fresh
+          # entry at the end.
+          key: dns-drift-state-${{ github.run_id }}
+          restore-keys: |
+            dns-drift-state-
+      - run: dns-drift
+        env:
+          DNS_DRIFT_AGENT_KEY_ID: ${{ secrets.DNS_DRIFT_AGENT_KEY_ID }}
+          DNS_DRIFT_AGENT_SECRET: ${{ secrets.DNS_DRIFT_AGENT_SECRET }}

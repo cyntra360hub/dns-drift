@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dns-drift"
+version = "0.1.0"
+description = "Watches a configurable list of domains for DNS record changes (A/AAAA/MX/NS/TXT) and reports drift between runs."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+authors = [{ name = "cyntra360hub" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+]
+
+[project.scripts]
+dns-drift = "dns_drift.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
