@@ -52,19 +52,32 @@ def _send_event(config: Config, payload: dict[str, Any], poster: Poster) -> dict
 
 
 def report_run(
-    config: Config, result: DriftResult, poster: Poster = post_signed
+    config: Config,
+    result: DriftResult,
+    poster: Poster = post_signed,
+    run_started: float | None = None,
 ) -> dict[str, Any] | None:
     """Report one dns-drift run as a signed task_started/task_completed
     event pair. Returns the platform's task_completed response, or None
-    if reporting is disabled."""
+    if reporting is disabled.
+
+    `run_started` should be a `time.monotonic()` reading taken before the
+    actual DNS sweep ran (see cli.py), so the reported `duration_ms`
+    reflects the real work done rather than just the round trip of this
+    function's own task_started call. Falls back to timing only this call
+    when omitted (e.g. in tests)."""
     if not config.report_enabled:
         return None
 
     task_id = str(uuid.uuid4())
-    started = time.monotonic()
+    if run_started is None:
+        run_started = time.monotonic()
 
     _send_event(config, {"event_type": "task_started", "task_id": task_id}, poster)
-    duration_ms = int((time.monotonic() - started) * 1000)
+    # Never report a duration of 0 -- a sub-millisecond run still took a
+    # real, non-zero amount of time as far as the platform's pulse is
+    # concerned.
+    duration_ms = max(1, round((time.monotonic() - run_started) * 1000))
     payload: dict[str, Any] = {
         "event_type": "task_completed",
         "task_id": task_id,

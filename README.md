@@ -94,7 +94,7 @@ detecting that is this agent doing its job, not a failure. `outcome` is
 `failure` only when a domain's DNS query itself couldn't complete
 (network error, malformed response). Any detected drift is summarized in
 the event's `external_ref` field (the events API's only freeform field),
-e.g. `"drift: example.com/A, example.com/MX"`.
+e.g. `"swept 2 domain(s) -- 2 change(s): example.com/A, example.com/MX"`.
 
 ## Development
 

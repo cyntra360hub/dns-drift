@@ -61,7 +61,10 @@ class DriftResult:
         if not changes:
             return None
         parts = [f"{c.domain}/{c.record_type}" for c in changes]
-        return ("drift: " + ", ".join(parts))[:255]
+        return (
+            f"swept {len(self.domains)} domain(s) -- {len(changes)} change(s): "
+            + ", ".join(parts)
+        )[:255]
 
     @property
     def outcome(self) -> str:

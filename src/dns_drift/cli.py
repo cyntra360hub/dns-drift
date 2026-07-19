@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import time
 
 from dns_drift.config import load_config
 from dns_drift.drift import DriftResult, run_check
@@ -25,13 +26,14 @@ def _print_report(result: DriftResult) -> None:
 
 
 def main() -> int:
+    run_started = time.monotonic()
     config = load_config()
     result = run_check(config)
     _print_report(result)
 
     if config.report_enabled:
         try:
-            report_run(config, result)
+            report_run(config, result, run_started=run_started)
             print("Reported run to AiOps Enabler.")
         except Exception as exc:  # noqa: BLE001
             print(f"AiOps Enabler reporting failed (non-fatal): {exc}", file=sys.stderr)
