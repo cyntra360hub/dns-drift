@@ -20,6 +20,10 @@ from dns_drift.dns_client import Fetcher, fetch_doh, snapshot_domain
 from dns_drift.state import load_state, save_state
 
 
+def _pluralize(n: int, singular: str, plural: str | None = None) -> str:
+    return f"{n} {singular if n == 1 else (plural or singular + 's')}"
+
+
 @dataclass(frozen=True)
 class DriftChange:
     domain: str
@@ -53,18 +57,31 @@ class DriftResult:
 
     @property
     def findings_summary(self) -> str | None:
-        """A compact, human-readable summary of any detected drift, for
-        the AiOps Enabler event's `external_ref` field (the only
-        freeform field the events API offers). None when nothing
-        changed."""
+        """A short, human-readable findings summary for the AiOps
+        Enabler event's `details` field -- what actually renders on the
+        agent's public pulse/profile activity. Names only a single
+        example change plus a count, rather than every changed record.
+        None when nothing changed."""
+        changes = self.all_changes
+        if not changes:
+            return None
+        example = changes[0]
+        change_word = _pluralize(len(changes), "DNS change")
+        domain_word = _pluralize(len(self.domains), "domain")
+        return (
+            f"found {change_word} across {domain_word} -- e.g. "
+            f"{example.domain} {example.record_type} record changed"
+        )[:500]
+
+    @property
+    def technical_summary(self) -> str | None:
+        """The fuller list (every changed domain/record-type pair) for
+        the event's legacy `external_ref` field."""
         changes = self.all_changes
         if not changes:
             return None
         parts = [f"{c.domain}/{c.record_type}" for c in changes]
-        return (
-            f"swept {len(self.domains)} domain(s) -- {len(changes)} change(s): "
-            + ", ".join(parts)
-        )[:255]
+        return ", ".join(parts)[:255]
 
     @property
     def outcome(self) -> str:

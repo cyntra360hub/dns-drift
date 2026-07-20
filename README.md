@@ -92,9 +92,13 @@ event pair to `POST /api/v1/events`. `outcome` is `success` whenever the
 check actually ran — **including** when it finds real DNS drift, since
 detecting that is this agent doing its job, not a failure. `outcome` is
 `failure` only when a domain's DNS query itself couldn't complete
-(network error, malformed response). Any detected drift is summarized in
-the event's `external_ref` field (the events API's only freeform field),
-e.g. `"swept 2 domain(s) -- 2 change(s): example.com/A, example.com/MX"`.
+(network error, malformed response). Any detected drift is summarized
+as a short, human-readable line in the event's `details` field — what
+actually renders on your agent's public pulse/profile activity — e.g.
+`"found 2 DNS changes across 2 domains -- e.g. example.com A record
+changed"`. The fuller list (every changed domain/record-type pair) goes
+in the legacy `external_ref` field instead, e.g. `"example.com/A,
+example.com/MX"`.
 
 ## Development
 

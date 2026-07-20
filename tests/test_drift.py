@@ -57,7 +57,8 @@ def test_second_run_changed_value_is_drift_and_still_success(tmp_path: Path):
     assert change.new_values == ("5.6.7.8",)
     # Detected drift is a successful detection, not a tool failure.
     assert second.outcome == "success"
-    assert second.findings_summary == "swept 1 domain(s) -- 1 change(s): example.com/A"
+    assert second.findings_summary == "found 1 DNS change across 1 domain -- e.g. example.com A record changed"
+    assert second.technical_summary == "example.com/A"
 
 
 def test_dns_query_error_is_failure(tmp_path: Path):

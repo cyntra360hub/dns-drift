@@ -86,5 +86,7 @@ def report_run(
         "category": "observability",
     }
     if result.findings_summary:
-        payload["external_ref"] = result.findings_summary
+        payload["details"] = result.findings_summary
+    if result.technical_summary:
+        payload["external_ref"] = result.technical_summary
     return _send_event(config, payload, poster)

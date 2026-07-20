@@ -38,14 +38,15 @@ def test_report_enabled_sends_started_then_completed():
     assert kinds == ["task_started", "task_completed"]
 
 
-def test_drift_found_is_success_with_external_ref():
+def test_drift_found_is_success_with_details_and_external_ref():
     poster = _FakePoster()
     config = Config(report_enabled=True, agent_key_id="ak_test", agent_secret="s3cret")
     change = DriftChange(domain="example.com", record_type="A", old_values=("1.1.1.1",), new_values=("2.2.2.2",))
     report_run(config, _result(changes=(change,)), poster=poster)
     second_body = json.loads(poster.calls[1][1])
     assert second_body["outcome"] == "success"
-    assert second_body["external_ref"] == "swept 1 domain(s) -- 1 change(s): example.com/A"
+    assert second_body["details"] == "found 1 DNS change across 1 domain -- e.g. example.com A record changed"
+    assert second_body["external_ref"] == "example.com/A"
 
 
 def test_query_error_is_failure_without_external_ref():
