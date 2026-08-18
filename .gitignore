@@ -8,3 +8,6 @@ build/
 dist/
 .env
 .state/
+
+# Runtime state written by publish.py (aiops-community client) — not source.
+state/
